@@ -1,69 +1,86 @@
 import React, { useState } from "react";
-import { Form, Icon, Input, Button } from "antd";
+import { useSelector, useDispatch } from 'react-redux';
+import { Form, Input, Button } from "antd";
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import app from "../firebaseConfig";
 import { withRouter } from "react-router";
+import { selectUser,
+         selectError,
+         selectSignup,
+         signupRequest,
+         signupSwitch
+       } from '../features/firebaseAuth/firebaseAuthSlice'
+
 import Errores from "../components/Errores";
 
-const Signup = ({ setsignup, history }) => {
-    const [error, seterror] = useState("");
-    const handleSignUp = async e => {
-        e.preventDefault();
-        const { usuario, clave } = e.target.elements;
+const layout = {
+  labelCol: { span: 8 },
+  wrapperCol: { span: 16 },
+};
+const tailLayout = {
+  wrapperCol: { offset: 8, span: 16 },
+};
 
-        await app
-            .auth()
-            .createUserWithEmailAndPassword(usuario.value, clave.value)
-            .then(result => {
-                console.log(result);
-                history.push("/");
-            })
-            .catch(error => {
-                seterror(error.message);
-            });
-    };
+const Signup = ({ setsignup, history }) => {
+
+    const error = useSelector(selectError);
+    const dispatch = useDispatch();
+    const signup = e => dispatch(signupRequest(e));
+
     return (
-        <Form className="login-form" onSubmit={handleSignUp}>
-            <Form.Item>
-                <h1>Registro</h1>
-            </Form.Item>
-            {error? <Form.Item><Errores mensaje={error}/></Form.Item>:null}
-            <Form.Item>
-                <Input
-                    prefix={
-                        <Icon
-                            type="user"
-                            style={{ color: "rgba(0,0,0,.25)" }}
-                        />
-                    }
-                    name="usuario"
-                    placeholder="Registra un Usuario"
+      <Form
+        {...layout}
+        name="basic"
+        initialValues={{ remember: true }}
+        onFinish={signup}
+      >
+        <Form.Item>
+            <h1>Sign Up</h1>
+        </Form.Item>
+        {error? <Form.Item><Errores mensaje={error}/></Form.Item>:null}
+        <Form.Item
+          name="username"
+          rules={[{ required: true, message: 'Please input your username!' }]}
+        >
+          <Input
+            prefix={
+                <UserOutlined
+                    style={{
+                        color: "rgba(0,0,0,.25)"
+                    }}
                 />
-            </Form.Item>
-            <Form.Item>
-                <Input
-                    prefix={
-                        <Icon
-                            type="lock"
-                            style={{ color: "rgba(0,0,0,.25)" }}
-                        />
-                    }
-                    name="clave"
-                    type="password"
-                    placeholder="Registra una Clave"
+            }
+            placeholder="Username"
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="password"
+          rules={[{ required: true, message: 'Please input your password!' }]}
+        >
+          <Input.Password
+            prefix={
+                <LockOutlined
+                    style={{
+                        color: "rgba(0,0,0,.25)"
+                    }}
                 />
-            </Form.Item>
-            <Form.Item>
+            }
+            placeholder="Password"
+          />
+        </Form.Item>
+
+        <Form.Item {...tailLayout}>
+          <Button type="primary" htmlType="submit">
+            Sign Up
+          </Button>
+
+                Or{" "}
                 <Button
-                    type="primary"
-                    htmlType="submit"
-                    className="login-form-button"
-                    style={{ marginRight: 10 }}
+                    onClick={() => dispatch(signupSwitch())}
+                    type="link"
                 >
-                    Registrate
-                </Button>
-                O{" "}
-                <Button onClick={() => setsignup(false)} type="link">
-                    Ingresa ahora!
+                    Sign in!
                 </Button>
             </Form.Item>
         </Form>

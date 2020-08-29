@@ -1,60 +1,45 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import { Layout } from "antd";
-import { Form, Icon, Input, Button } from "antd";
+import { Form, Input, Button } from "antd";
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import Signup from "./Signup";
 import { withRouter } from "react-router";
 import * as firebase from "firebase/app";
-import app from "../firebaseConfig";
-import { Auth } from "../context/AuthContext";
+import { selectUser,
+         selectSignup,
+         selectError,
+         selectLogged,
+         loginRequest,
+         signupSwitch
+       } from '../features/firebaseAuth/firebaseAuthSlice'
 import Errores from '../components/Errores'
 
+const layout = {
+  labelCol: { span: 8 },
+  wrapperCol: { span: 16 },
+};
+const tailLayout = {
+  wrapperCol: { offset: 8, span: 16 },
+};
+
 const Login = ({ history }) => {
-    const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
-    const facebookAuthProvider = new firebase.auth.FacebookAuthProvider();
-    const githubAuthProvider = new firebase.auth.GithubAuthProvider();
 
     const { Content, Footer } = Layout;
-    const [signup, setsignup] = useState(false);
-    const { usuario } = useContext(Auth);
-    const [error, seterror] = useState('')
+
+    const user = useSelector(selectUser);
+    const signup = useSelector(selectSignup);
+    const error = useSelector(selectError);
+    const logged = useSelector(selectLogged);
+    const dispatch = useDispatch();
+    //const signin = e => console.log(e);
+    const signin = e => dispatch(loginRequest(e));
 
     useEffect(() => {
-        if (usuario) {
+        if (logged) {
             history.push("/");
         }
-    }, [history, usuario]);
-
-    const correoClave = async e => {
-        e.preventDefault();
-        const { usuario, clave } = e.target.elements;
-
-        await app
-            .auth()
-            .signInWithEmailAndPassword(usuario.value, clave.value)
-            .then(result => {
-                console.log(result);
-                history.push("/");
-            })
-            .catch(error => {
-                seterror(error.message)
-            });
-        
-    };
-
-
-    const socialLogin = async (provider)=>{
-        await app
-        .auth()
-        .signInWithPopup(provider)
-        .then(result => {
-            console.log(result);
-        })
-        .catch(error => {
-            seterror(error.message)
-        });
-    }
-
-
+    }, [history, user]);
 
     return (
         <Layout style={{ height: "100vh" }}>
@@ -69,107 +54,79 @@ const Login = ({ history }) => {
                 }}
             >
                 <div
-                    style={{
-                        background: "#fff",
-                        padding: 24,
-                        height: 450,
-                        width: 400,
-                        textAlign: "center",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        display: "flex"
-                    }}
+                  style={{
+                      background: "#fff",
+                      padding: 24,
+                      height: 450,
+                      width: 400,
+                      textAlign: "center",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      display: "flex"
+                  }}
                 >
                     {!signup ? (
-                        <Form className="login-form" onSubmit={correoClave}>
-                            <Form.Item>
-                                <h1>Ingreso</h1>
-                            </Form.Item>
-                            {error? <Form.Item><Errores mensaje={error}/></Form.Item>:null}
-                            <Form.Item>
-                                <Input
-                                    prefix={
-                                        <Icon
-                                            type="user"
-                                            style={{
-                                                color: "rgba(0,0,0,.25)"
-                                            }}
-                                        />
-                                    }
-                                    name="usuario"
-                                    placeholder="Usuario"
+                      <Form
+                        {...layout}
+                        name="basic"
+                        initialValues={{ remember: true }}
+                        onFinish={signin}
+                      >
+                        <Form.Item>
+                            <h1>Sign In</h1>
+                        </Form.Item>
+                        {error? <Form.Item><Errores mensaje={error}/></Form.Item>:null}
+                        <Form.Item
+                          name="username"
+                          rules={[{ required: true, message: 'Please input your username!' }]}
+                        >
+                          <Input
+                            prefix={
+                                <UserOutlined
+                                    style={{
+                                        color: "rgba(0,0,0,.25)"
+                                    }}
                                 />
-                            </Form.Item>
-                            <Form.Item>
-                                <Input
-                                    prefix={
-                                        <Icon
-                                            type="lock"
-                                            style={{
-                                                color: "rgba(0,0,0,.25)"
-                                            }}
-                                        />
-                                    }
-                                    name="clave"
-                                    type="password"
-                                    placeholder="Clave"
+                            }
+                            placeholder="Username"
+                          />
+                        </Form.Item>
+
+                        <Form.Item
+                          name="password"
+                          rules={[{ required: true, message: 'Please input your password!' }]}
+                        >
+                          <Input.Password
+                            prefix={
+                                <LockOutlined
+                                    style={{
+                                        color: "rgba(0,0,0,.25)"
+                                    }}
                                 />
-                            </Form.Item>
-                            <Form.Item>
+                            }
+                            placeholder="Password"
+                          />
+                        </Form.Item>
+
+                        <Form.Item {...tailLayout}>
+                          <Button type="primary" htmlType="submit">
+                            Sign In
+                          </Button>
+
+                                Or {" "}
                                 <Button
-                                    type="primary"
-                                    htmlType="submit"
-                                    className="login-form-button"
-                                    style={{ marginRight: 10 }}
-                                >
-                                    Ingresa
-                                </Button>
-                                O{" "}
-                                <Button
-                                    onClick={() => setsignup(true)}
+                                    onClick={() => dispatch(signupSwitch())}
                                     type="link"
                                 >
-                                    Registrate Ahora!
-                                </Button>
-                            </Form.Item>
-                            <Form.Item>
-                                <Button
-                                    type="danger"
-                                    htmlType="button"
-                                    className="login-form-button"
-                                    style={{ marginRight: 10 }}
-                                    onClick={() => socialLogin(googleAuthProvider)}
-                                >
-                                    Google
-                                </Button>
-                                <Button
-                                    type="primary"
-                                    htmlType="button"
-                                    className="login-form-button"
-                                    style={{ marginRight: 10 }}
-                                    onClick={() => socialLogin(facebookAuthProvider)}
-                                >
-                                    Facebook
-                                </Button>
-                                <Button
-                                    type="danger"
-                                    htmlType="button"
-                                    className="login-form-button"
-                                    style={{ marginRight: 10 }}
-                                    onClick={() => socialLogin(githubAuthProvider)}
-                                >
-                                    GitHub
+                                    Sign Up!
                                 </Button>
                             </Form.Item>
                         </Form>
                     ) : (
-                        <Signup setsignup={setsignup} />
+                        <Signup />
                     )}
                 </div>
             </Content>
-            <Footer style={{ textAlign: "center" }}>
-                Creado por Nicolás Morales
-            </Footer>
         </Layout>
     );
 };

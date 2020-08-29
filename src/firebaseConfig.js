@@ -4,15 +4,14 @@ import "firebase/auth";
 
 const app = firebase.initializeApp(
     {
-        apiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        authDomain: "XXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        databaseURL: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        projectId: "XXXXXXXXXXXXXXXX",
-        storageBucket: "XXXXXXXXXXXXXXXXXXXXXXXXX",
-        messagingSenderId: "XXXXXXXXXXXXXXXXXXXX",
-        appId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-        measurementId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-    }
+    apiKey: "AIzaSyCjNP34gMKkqFbLKNzRSdbJUUJNWPbppjk",
+    authDomain: "unbackend.firebaseapp.com",
+    databaseURL: "https://unbackend.firebaseio.com",
+    projectId: "unbackend",
+    storageBucket: "unbackend.appspot.com",
+    messagingSenderId: "254954750622",
+    appId: "1:254954750622:web:8c150af62a977a4388f18f"
+  }
 );
 
 /*const googleAuthProvider = new firebase.auth.GoogleAuthProvider();
